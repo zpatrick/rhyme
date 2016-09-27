@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/zpatrick/fireball"
-	"github.com/zpatrick/fireball/examples/rhyme/controllers"
+	"github.com/zpatrick/rhyme/controllers"
 	"log"
 	"math/rand"
 	"net/http"
