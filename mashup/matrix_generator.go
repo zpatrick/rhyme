@@ -55,7 +55,7 @@ func newMatrix(lines []Line, wordRhymes map[string][]string) map[int][]Line {
 
 		acceptableWords := map[string]bool{}
 		for _, rhyme := range rhymes {
-			acceptableWords[rhyme] = true
+			acceptableWords[strings.ToLower(rhyme)] = true
 		}
 
 		matches := []Line{}
@@ -66,7 +66,7 @@ func newMatrix(lines []Line, wordRhymes map[string][]string) map[int][]Line {
 
 			word := strings.ToLower(potentialMatch.Last())
 			if _, ok := acceptableWords[word]; ok {
-				matches = append(matches, line)
+				matches = append(matches, potentialMatch)
 			}
 		}
 
