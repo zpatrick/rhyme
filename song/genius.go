@@ -60,6 +60,7 @@ func (g *GeniusClient) Search(title, artist string) (*Song, error) {
 	song := &Song{
 		Title:  hit.Title,
 		Artist: hit.PrimaryArtist.Name,
+		URL:    hit.URL,
 		Lyrics: lyrics,
 	}
 
@@ -89,7 +90,7 @@ func (g *GeniusClient) findSong(title, artist string) (*GeniusHitResult, error) 
 	return nil, fmt.Errorf("No songs found matching '%s by %s'", title, artist)
 }
 
-func (g *GeniusClient) scrapeSongLyrics(songURL string) (Lyrics, error) {
+func (g *GeniusClient) scrapeSongLyrics(songURL string) ([]Line, error) {
 	response, err := http.Get(songURL)
 	if err != nil {
 		return nil, err
@@ -101,21 +102,23 @@ func (g *GeniusClient) scrapeSongLyrics(songURL string) (Lyrics, error) {
 		return nil, err
 	}
 
-	lines := strings.Split(doc.Find(".lyrics").First().Text(), "\n")
-	lyrics := make(Lyrics, 0, len(lines))
-	for _, line := range lines {
-		words := strings.Split(line, " ")
-		verse := make(Verse, 0, len(words))
+	result := strings.Split(doc.Find(".lyrics").First().Text(), "\n")
+	lines := make([]Line, 0, len(result))
+	for _, r := range result {
+		words := strings.Split(r, " ")
+		line := make([]string, 0, len(words))
 		for _, word := range words {
 			if len(word) > 0 {
-				verse = append(verse, Word(word))
+				line = append(line, word)
 			}
 		}
 
-		if len(verse) > 0 {
-			lyrics = append(lyrics, verse)
+		if len(line) > 0 {
+			lines = append(lines, line)
 		}
 	}
 
-	return lyrics, nil
+	// todo: replace words so they can rhyme
+
+	return lines, nil
 }

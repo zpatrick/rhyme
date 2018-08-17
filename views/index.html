@@ -29,7 +29,7 @@
 						<div class="inner">
 							<h2>Verse Generator</h2>
 							<ul style="list-style: none;">
-							{{ range .Lines }} <li><a href="{{ .Song.Link }}">{{ .Value }}</a></li>{{ end }}
+							{{ range . }} <li><a href="{{ .URL }}">{{ .Text }}</a></li>{{ end }}
 							</ul>
 
 							<ul class="actions">

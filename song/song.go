@@ -3,11 +3,8 @@ package song
 type Song struct {
 	Title  string
 	Artist string
-	Lyrics Lyrics
+	URL    string
+	Lyrics []Line
 }
 
-type Lyrics []Verse
-
-type Verse []Word
-
-type Word string
+type Line []string
