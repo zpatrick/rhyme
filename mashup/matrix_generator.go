@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-type Generator func() Verse
-
 func NewMatrixGenerator(songIDs []int, l LyricFetcher, r Rhymer) (Generator, error) {
 	wordRhymes := map[string][]string{}
 	updateWordRhymes := func(word string, rhymes []string) error {
@@ -24,22 +22,11 @@ func NewMatrixGenerator(songIDs []int, l LyricFetcher, r Rhymer) (Generator, err
 		return nil, err
 	}
 
-	/*
-		if err := generateLines(songIDs, l, func(line Line) {
-			lines = append(lines, line)
-			generateRhymes(line, r, func(word string, rhymes []string) {
-				wordRhymes[word] = rhymes
-			})
-		}); if err != nil {
-			return err
-		}
-	*/
+	matrix := newMatrix(lines, wordRhymes)
+	return newMatrixGenerator(lines, matrix), nil
+}
 
-	matrix := map[int][]Line{}
-	generateMatrix(lines, wordRhymes, func(lineIndex int, lines []Line) {
-		matrix[lineIndex] = lines
-	})
-
+func newMatrixGenerator(lines []Line, matrix map[int][]Line) Generator {
 	return func() Verse {
 		verse := Verse{}
 		for len(verse) < 4 {
@@ -54,10 +41,11 @@ func NewMatrixGenerator(songIDs []int, l LyricFetcher, r Rhymer) (Generator, err
 		}
 
 		return verse
-	}, nil
+	}
 }
 
-func generateMatrix(lines []Line, wordRhymes map[string][]string, update func(lineIndex int, lines []Line)) {
+func newMatrix(lines []Line, wordRhymes map[string][]string) map[int][]Line {
+	matrix := map[int][]Line{}
 	for lineIndex, line := range lines {
 		word := strings.ToLower(line.Last())
 		rhymes, ok := wordRhymes[word]
@@ -82,8 +70,10 @@ func generateMatrix(lines []Line, wordRhymes map[string][]string, update func(li
 			}
 		}
 
-		update(lineIndex, lines)
+		matrix[lineIndex] = lines
 	}
+
+	return matrix
 }
 
 func generateLines(songIDs []int, l LyricFetcher, update func(Line) error) error {
