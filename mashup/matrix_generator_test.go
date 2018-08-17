@@ -9,8 +9,9 @@ import (
 
 func TestGenerateLines(t *testing.T) {
 	result := []Line{}
-	update := func(l Line) {
+	update := func(l Line) error {
 		result = append(result, l)
+		return nil
 	}
 
 	songIDs := []int{123, 456}
@@ -30,7 +31,7 @@ func TestGenerateLines(t *testing.T) {
 		default:
 			t.Fatalf("Unexpected songID: %d", songID)
 		}
-		
+
 		return lyrics, nil
 	})
 
@@ -44,26 +45,14 @@ func TestGenerateLines(t *testing.T) {
 		strings.Split("Can I kick it? To all the people who can Quest like A Tribe does", " "),
 		strings.Split("Before this, did you really know what live was?", " "),
 	}
-	
 	assert.Equal(t, result, expected)
 }
 
 func TestGenerateRhymes(t *testing.T) {
-	c := make(chan Line)
-	go func() {
-		for _, line := range []string{
-			"Yeah - I feel amazing",
-			"Yeah -I'm in the matrix",
-			"My mind is living on cloud 9",
-			"and this nine is never on vacation"} {
-			c <- Line(strings.Split(line, " "))
-		}
-		close(c)
-	}()
-
 	result := map[string][]string{}
-	update := func(word string, rhymes []string) {
+	update := func(word string, rhymes []string) error {
 		result[word] = rhymes
+		return nil
 	}
 
 	rhymer := RhymerFunc(func(word string) ([]string, error) {
@@ -82,8 +71,14 @@ func TestGenerateRhymes(t *testing.T) {
 		}
 	})
 
-	if err := generateRhymes(c, rhymer, update); err != nil {
-		t.Fatal(err)
+	for _, line := range []string{
+		"Yeah - I feel amazing",
+		"Yeah -I'm in the matrix",
+		"My mind is living on cloud 9",
+		"and this nine is never on vacation"} {
+		if err := generateRhymes(strings.Split(line, " "), rhymer, update); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	expected := map[string][]string{
