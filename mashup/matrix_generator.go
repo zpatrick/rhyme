@@ -7,18 +7,18 @@ import (
 
 func NewMatrixGenerator(songIDs []int, l LyricFetcher, r Rhymer) (Generator, error) {
 	wordRhymes := map[string][]string{}
-	updateWordRhymes := func(word string, rhymes []string) error {
+	generateWordRhymesFunc := func(word string, rhymes []string) error {
 		wordRhymes[word] = rhymes
 		return nil
 	}
 
 	lines := []Line{}
-	updateLines := func(line Line) error {
+	generateLinesFunc := func(line Line) error {
 		lines = append(lines, line)
-		return generateRhymes(line, r, updateWordRhymes)
+		return generateRhymes(line, r, generateWordRhymesFunc)
 	}
 
-	if err := generateLines(songIDs, l, updateLines); err != nil {
+	if err := generateLines(songIDs, l, generateLinesFunc); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +76,7 @@ func newMatrix(lines []Line, wordRhymes map[string][]string) map[int][]Line {
 	return matrix
 }
 
-func generateLines(songIDs []int, l LyricFetcher, update func(Line) error) error {
+func generateLines(songIDs []int, l LyricFetcher, generateFunc func(Line) error) error {
 	for _, songID := range songIDs {
 		lyrics, err := l.FetchLyrics(songID)
 		if err != nil {
@@ -84,7 +84,7 @@ func generateLines(songIDs []int, l LyricFetcher, update func(Line) error) error
 		}
 
 		for _, line := range lyrics {
-			if err := update(line); err != nil {
+			if err := generateFunc(line); err != nil {
 				return err
 			}
 		}
@@ -93,12 +93,12 @@ func generateLines(songIDs []int, l LyricFetcher, update func(Line) error) error
 	return nil
 }
 
-func generateRhymes(line Line, r Rhymer, update func(word string, rhymes []string) error) error {
+func generateRhymes(line Line, r Rhymer, generateFunc func(word string, rhymes []string) error) error {
 	word := line.Last()
 	rhymes, err := r.Rhyme(word)
 	if err != nil {
 		return err
 	}
 
-	return update(word, rhymes)
+	return generateFunc(word, rhymes)
 }
